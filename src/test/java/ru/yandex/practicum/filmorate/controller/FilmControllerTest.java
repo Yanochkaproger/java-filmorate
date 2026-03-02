@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -191,4 +192,39 @@ class FilmControllerTest {
 
         assertEquals("Название фильма не может быть пустым", exception.getMessage());
     }
+
+    @Test
+    void updateFilmWithNotFound() {
+        Film film = new Film();
+        film.setId(999L);
+        film.setName("Фильм");
+        film.setDescription("Описание");
+        film.setReleaseDate(LocalDate.of(2024, 1, 1));
+        film.setDuration(120);
+
+        NotFoundException exception = assertThrows(
+                NotFoundException.class,
+                () -> filmController.update(film)
+        );
+
+        assertEquals("Фильм с id=999 не найден", exception.getMessage());
+    }
+
+    @Test
+    void updateFilmWithNullId() {
+        Film film = new Film();
+        film.setId(null);
+        film.setName("Фильм");
+        film.setDescription("Описание");
+        film.setReleaseDate(LocalDate.of(2024, 1, 1));
+        film.setDuration(120);
+
+        NotFoundException exception = assertThrows(
+                NotFoundException.class,
+                () -> filmController.update(film)
+        );
+
+        assertEquals("Фильм с id=null не найден", exception.getMessage());
+    }
 }
+

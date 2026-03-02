@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -64,12 +65,12 @@ public class UserController {
     public User update(final @RequestBody User user) {
         log.info("Попытка обновления пользователя с id={}", user.getId());
         validateUser(user);
-        if (user.getId() != null && users.containsKey(user.getId())) {
-            users.put(user.getId(), user);
-            log.info("Пользователь с id={} успешно обновлён", user.getId());
-        } else {
-            log.warn("Пользователь с id={} не найден для обновления", user.getId());
+        if (user.getId() == null || !users.containsKey(user.getId())) {
+            log.error("Пользователь с id={} не найден", user.getId());
+            throw new NotFoundException("Пользователь с id=" + user.getId() + " не найден");
         }
+        users.put(user.getId(), user);
+        log.info("Пользователь с id={} успешно обновлён", user.getId());
         return user;
     }
 
@@ -111,4 +112,3 @@ public class UserController {
         log.debug("Валидация пользователя прошла успешно");
     }
 }
-

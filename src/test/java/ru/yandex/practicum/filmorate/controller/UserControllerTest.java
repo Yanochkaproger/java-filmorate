@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -252,5 +253,39 @@ class UserControllerTest {
         );
 
         assertEquals("Логин не может содержать пробелы", exception.getMessage());
+    }
+
+    @Test
+    void updateUserWithNotFound() {
+        User user = new User();
+        user.setId(999L);
+        user.setEmail("user@example.com");
+        user.setLogin("user123");
+        user.setName("Иван");
+        user.setBirthday(LocalDate.of(1990, 1, 1));
+
+        NotFoundException exception = assertThrows(
+                NotFoundException.class,
+                () -> userController.update(user)
+        );
+
+        assertEquals("Пользователь с id=999 не найден", exception.getMessage());
+    }
+
+    @Test
+    void updateUserWithNullId() {
+        User user = new User();
+        user.setId(null);
+        user.setEmail("user@example.com");
+        user.setLogin("user123");
+        user.setName("Иван");
+        user.setBirthday(LocalDate.of(1990, 1, 1));
+
+        NotFoundException exception = assertThrows(
+                NotFoundException.class,
+                () -> userController.update(user)
+        );
+
+        assertEquals("Пользователь с id=null не найден", exception.getMessage());
     }
 }
