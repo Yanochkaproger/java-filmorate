@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,6 +26,9 @@ public class FilmService {
 
     /** Хранилище фильмов. */
     private final FilmStorage filmStorage;
+
+    /** Хранилище пользователей (для проверки существования). */
+    private final UserStorage userStorage;
 
     /** Хранилище лайков: filmId → набор userId. */
     private final Map<Long, Set<Long>> likesMap = new HashMap<>();
@@ -87,9 +91,18 @@ public class FilmService {
         log.info("Добавление лайка: filmId={}, userId={}",
                 filmId, userId);
 
+        // ✅ Проверяем существование фильма
         if (!filmStorage.findById(filmId).isPresent()) {
+            log.warn("Фильм с id={} не найден", filmId);
             throw new NotFoundException(
                     "Фильм с id = " + filmId + " не найден");
+        }
+
+        // ✅ Проверяем существование пользователя
+        if (!userStorage.findById(userId).isPresent()) {
+            log.warn("Пользователь с id={} не найден", userId);
+            throw new NotFoundException(
+                    "Пользователь с id = " + userId + " не найден");
         }
 
         likesMap.computeIfAbsent(filmId, k -> new HashSet<>())
@@ -107,9 +120,18 @@ public class FilmService {
         log.info("Удаление лайка: filmId={}, userId={}",
                 filmId, userId);
 
+        // ✅ Проверяем существование фильма
         if (!filmStorage.findById(filmId).isPresent()) {
+            log.warn("Фильм с id={} не найден", filmId);
             throw new NotFoundException(
                     "Фильм с id = " + filmId + " не найден");
+        }
+
+        // ✅ Проверяем существование пользователя
+        if (!userStorage.findById(userId).isPresent()) {
+            log.warn("Пользователь с id={} не найден", userId);
+            throw new NotFoundException(
+                    "Пользователь с id = " + userId + " не найден");
         }
 
         if (likesMap.containsKey(filmId)) {
@@ -130,6 +152,7 @@ public class FilmService {
         log.info("Получение лайков фильма с id={}", filmId);
 
         if (!filmStorage.findById(filmId).isPresent()) {
+            log.warn("Фильм с id={} не найден", filmId);
             throw new NotFoundException(
                     "Фильм с id = " + filmId + " не найден");
         }

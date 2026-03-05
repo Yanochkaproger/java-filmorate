@@ -6,6 +6,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.time.LocalDate;
 
@@ -22,7 +23,8 @@ class FilmControllerTest {
     @BeforeEach
     void setUp() {
         final InMemoryFilmStorage filmStorage = new InMemoryFilmStorage();
-        filmService = new FilmService(filmStorage);
+        final InMemoryUserStorage userStorage = new InMemoryUserStorage();
+        filmService = new FilmService(filmStorage, userStorage);
         filmController = new FilmController(filmService);
     }
 
