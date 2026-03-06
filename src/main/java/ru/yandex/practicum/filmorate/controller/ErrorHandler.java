@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -10,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.ErrorResponse;
 /**
  * Обработчик ошибок контроллера.
  */
+@Slf4j
 @RestControllerAdvice
 public class ErrorHandler {
 
@@ -22,6 +24,7 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFound(
             final NotFoundException exception) {
+        log.warn("Ресурс не найден: {}", exception.getMessage());
         return new ErrorResponse(exception.getMessage());
     }
 
@@ -34,6 +37,7 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleIllegalArgument(
             final IllegalArgumentException exception) {
+        log.warn("Некорректные данные запроса: {}", exception.getMessage());
         return new ErrorResponse(exception.getMessage());
     }
 
@@ -42,10 +46,12 @@ public class ErrorHandler {
      * @param exception исключение
      * @return ответ с ошибкой
      */
-    @ExceptionHandler(Throwable.class)
+    @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleThrowable(
-            final Throwable exception) {
+    public ErrorResponse handleException(
+            final Exception exception) {
+        log.error("Произошла непредвиденная ошибка: {}",
+                exception.getMessage(), exception);
         return new ErrorResponse("Произошла непредвиденная ошибка.");
     }
 }
