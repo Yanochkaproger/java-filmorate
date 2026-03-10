@@ -68,7 +68,7 @@ public class UserController {
     }
 
     /**
-     * Добавляет пользователя в друзья.
+     * Отправляет запрос на добавление в друзья.
      * @param userId идентификатор пользователя
      * @param friendId идентификатор друга
      */
@@ -76,6 +76,17 @@ public class UserController {
     public void addFriend(@PathVariable final Long userId,
                           @PathVariable final Long friendId) {
         userService.addFriend(userId, friendId);
+    }
+
+    /**
+     * Подтверждает заявку на добавление в друзья.
+     * @param userId идентификатор пользователя
+     * @param friendId идентификатор друга
+     */
+    @PostMapping("/{userId}/friends/{friendId}")
+    public void confirmFriend(@PathVariable final Long userId,
+                              @PathVariable final Long friendId) {
+        userService.confirmFriend(userId, friendId);
     }
 
     /**
@@ -109,5 +120,15 @@ public class UserController {
     public List<User> getCommonFriends(@PathVariable final Long userId,
                                        @PathVariable final Long otherUserId) {
         return userService.getCommonFriends(userId, otherUserId);
+    }
+
+    /**
+     * Возвращает список входящих заявок на дружбу.
+     * @param userId идентификатор пользователя
+     * @return список пользователей с pending заявками
+     */
+    @GetMapping("/{userId}/friends/pending")
+    public List<User> getPendingFriends(@PathVariable final Long userId) {
+        return userService.getPendingFriends(userId);
     }
 }

@@ -1,9 +1,13 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MpaRating;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Интерфейс хранилища фильмов.
@@ -42,4 +46,30 @@ public interface FilmStorage {
      * @param id идентификатор фильма
      */
     void delete(Long id);
+
+    /**
+     * Возвращает все жанры.
+     * @return список жанров
+     */
+    List<Genre> findAllGenres();
+
+    /**
+     * Возвращает жанр по идентификатору.
+     * @param id идентификатор жанра
+     * @return Optional с жанром
+     */
+    Optional<Genre> findGenreById(Long id);
+
+    /**
+     * Возвращает все рейтинги MPA.
+     * @return список рейтингов
+     */
+    List<MpaRating> findAllMpaRatings();
+
+    /**
+     * Возвращает рейтинг MPA по идентификатору.
+     * @param id идентификатор рейтинга
+     * @return Optional с рейтингом
+     */
+    Optional<MpaRating> findMpaRatingById(Long id);
 }
