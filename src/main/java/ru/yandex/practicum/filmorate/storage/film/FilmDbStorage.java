@@ -177,4 +177,3 @@ public class FilmDbStorage implements FilmStorage {
         return new MpaRating(rs.getLong("id"), rs.getString("name"));
     }
 }
-
