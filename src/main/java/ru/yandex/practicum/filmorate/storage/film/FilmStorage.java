@@ -17,6 +17,7 @@ public interface FilmStorage {
      * Возвращает все фильмы.
      * @return коллекция фильмов
      */
+
     Collection<Film> findAll();
 
     /**
@@ -72,3 +73,4 @@ public interface FilmStorage {
      */
     Optional<MpaRating> findMpaRatingById(Long id);
 }
+
