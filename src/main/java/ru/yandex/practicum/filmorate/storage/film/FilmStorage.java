@@ -10,11 +10,21 @@ import java.util.Optional;
 
 public interface FilmStorage {
 
-
     Collection<Film> findAll();
 
+    /**
+     * Возвращает фильм по идентификатору.
+     * @param id идентификатор фильма
+     * @return Optional с фильмом
+     */
 
     Optional<Film> findById(Long id);
+
+    /**
+     * Добавляет новый фильм.
+     * @param film фильм для добавления
+     * @return сохранённый фильм с установленным id
+     */
 
     Film create(Film film);
 
@@ -23,18 +33,21 @@ public interface FilmStorage {
      * @param film фильм для обновления
      * @return обновлённый фильм
      */
+
     Film update(Film film);
 
     /**
      * Удаляет фильм по идентификатору.
      * @param id идентификатор фильма
      */
+
     void delete(Long id);
 
     /**
      * Возвращает все жанры.
      * @return список жанров
      */
+
     List<Genre> findAllGenres();
 
     /**

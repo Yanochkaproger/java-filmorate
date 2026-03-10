@@ -41,6 +41,5 @@ public interface UserStorage {
      * Удаляет пользователя по идентификатору.
      * @param id идентификатор пользователя
      */
-
     void delete(Long id);
 }
