@@ -2,20 +2,18 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.Data;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
-/**
- * Модель фильма.
- */
 @Data
 public class Film {
-    /** Уникальный идентификатор фильма. */
     private Long id;
-    /** Название фильма. */
     private String name;
-    /** Описание фильма. */
     private String description;
-    /** Дата релиза фильма. */
     private LocalDate releaseDate;
-    /** Продолжительность фильма в минутах. */
     private Integer duration;
+    private Integer mpaId;
+    private Set<Long> genreIds = new HashSet<>();
+    private Set<Genre> genres = new HashSet<>();
+    private MpaRating mpa;
 }
