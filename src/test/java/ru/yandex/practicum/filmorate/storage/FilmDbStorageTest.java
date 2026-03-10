@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Slf4j
 @JdbcTest
 @AutoConfigureTestDatabase
-@Import(FilmDbStorage.class)
+@Import(FilmDbStorage.class)  // ✅ ЭТА АННОТАЦИЯ ВАЖНА!
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class FilmDbStorageTest {
 
@@ -36,7 +36,6 @@ class FilmDbStorageTest {
 
         assertThat(created.getId()).isNotNull();
         assertThat(created.getName()).isEqualTo("Тестовый фильм");
-        log.info("Film created with id: {}", created.getId());
     }
 
     @Test
