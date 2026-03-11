@@ -8,8 +8,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Интерфейс хранилища фильмов.
+ */
 public interface FilmStorage {
 
+    /**
+     * Возвращает все фильмы.
+     * @return коллекция фильмов
+     */
     Collection<Film> findAll();
 
     /**
@@ -17,7 +24,6 @@ public interface FilmStorage {
      * @param id идентификатор фильма
      * @return Optional с фильмом
      */
-
     Optional<Film> findById(Long id);
 
     /**
@@ -25,7 +31,6 @@ public interface FilmStorage {
      * @param film фильм для добавления
      * @return сохранённый фильм с установленным id
      */
-
     Film create(Film film);
 
     /**
@@ -33,21 +38,18 @@ public interface FilmStorage {
      * @param film фильм для обновления
      * @return обновлённый фильм
      */
-
     Film update(Film film);
 
     /**
      * Удаляет фильм по идентификатору.
      * @param id идентификатор фильма
      */
-
     void delete(Long id);
 
     /**
      * Возвращает все жанры.
      * @return список жанров
      */
-
     List<Genre> findAllGenres();
 
     /**
@@ -70,4 +72,3 @@ public interface FilmStorage {
      */
     Optional<MpaRating> findMpaRatingById(Long id);
 }
-
