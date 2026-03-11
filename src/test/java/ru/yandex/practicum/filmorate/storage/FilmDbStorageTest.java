@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Slf4j
 @JdbcTest
 @AutoConfigureTestDatabase
-@Import(FilmDbStorage.class)  // ✅ ЭТА АННОТАЦИЯ ВАЖНА!
+@Import(FilmDbStorage.class)
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class FilmDbStorageTest {
 
@@ -102,3 +102,4 @@ class FilmDbStorageTest {
         assertThat(filmStorage.findAllMpaRatings()).hasSize(5);
     }
 }
+

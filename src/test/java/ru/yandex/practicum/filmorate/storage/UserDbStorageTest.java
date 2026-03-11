@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Slf4j
 @JdbcTest
 @AutoConfigureTestDatabase
-@Import(UserDbStorage.class)  // ✅ ЭТА АННОТАЦИЯ ВАЖНА!
+@Import(UserDbStorage.class)
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class UserDbStorageTest {
 
