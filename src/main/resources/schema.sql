@@ -54,8 +54,7 @@ CREATE TABLE IF NOT EXISTS friendships (
     status VARCHAR(20) NOT NULL,
     PRIMARY KEY (user_id, friend_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (friend_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT chk_status CHECK (status IN ('PENDING', 'CONFIRMED'))
+    FOREIGN KEY (friend_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Индексы
@@ -63,4 +62,3 @@ CREATE INDEX IF NOT EXISTS idx_film_likes_film_id ON film_likes(film_id);
 CREATE INDEX IF NOT EXISTS idx_film_likes_user_id ON film_likes(user_id);
 CREATE INDEX IF NOT EXISTS idx_friendships_user_id ON friendships(user_id);
 CREATE INDEX IF NOT EXISTS idx_friendships_friend_id ON friendships(friend_id);
-CREATE INDEX IF NOT EXISTS idx_friendships_status ON friendships(status);
