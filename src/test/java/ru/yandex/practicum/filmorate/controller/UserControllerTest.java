@@ -4,7 +4,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.time.LocalDate;
 
@@ -16,10 +19,13 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserControllerTest {
 
     private UserController userController;
+    private UserService userService;
 
     @BeforeEach
     void setUp() {
-        userController = new UserController();
+        final InMemoryUserStorage userStorage = new InMemoryUserStorage();
+        userService = new UserService(userStorage);
+        userController = new UserController(userService);
     }
 
     @Test
@@ -45,12 +51,13 @@ class UserControllerTest {
         user.setName("Иван");
         user.setBirthday(LocalDate.of(1990, 1, 1));
 
-        ValidationException exception = assertThrows(
-                ValidationException.class,
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
                 () -> userController.create(user)
         );
 
-        assertEquals("Электронная почта не может быть пустой", exception.getMessage());
+        assertEquals("Электронная почта не может быть пустой",
+                exception.getMessage());
     }
 
     @Test
@@ -61,12 +68,13 @@ class UserControllerTest {
         user.setName("Иван");
         user.setBirthday(LocalDate.of(1990, 1, 1));
 
-        ValidationException exception = assertThrows(
-                ValidationException.class,
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
                 () -> userController.create(user)
         );
 
-        assertEquals("Электронная почта не может быть пустой", exception.getMessage());
+        assertEquals("Электронная почта не может быть пустой",
+                exception.getMessage());
     }
 
     @Test
@@ -77,12 +85,13 @@ class UserControllerTest {
         user.setName("Иван");
         user.setBirthday(LocalDate.of(1990, 1, 1));
 
-        ValidationException exception = assertThrows(
-                ValidationException.class,
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
                 () -> userController.create(user)
         );
 
-        assertEquals("Электронная почта должна содержать символ @", exception.getMessage());
+        assertEquals("Электронная почта должна содержать символ @",
+                exception.getMessage());
     }
 
     @Test
@@ -93,12 +102,13 @@ class UserControllerTest {
         user.setName("Иван");
         user.setBirthday(LocalDate.of(1990, 1, 1));
 
-        ValidationException exception = assertThrows(
-                ValidationException.class,
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
                 () -> userController.create(user)
         );
 
-        assertEquals("Логин не может быть пустым", exception.getMessage());
+        assertEquals("Логин не может быть пустым",
+                exception.getMessage());
     }
 
     @Test
@@ -109,12 +119,13 @@ class UserControllerTest {
         user.setName("Иван");
         user.setBirthday(LocalDate.of(1990, 1, 1));
 
-        ValidationException exception = assertThrows(
-                ValidationException.class,
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
                 () -> userController.create(user)
         );
 
-        assertEquals("Логин не может быть пустым", exception.getMessage());
+        assertEquals("Логин не может быть пустым",
+                exception.getMessage());
     }
 
     @Test
@@ -125,12 +136,13 @@ class UserControllerTest {
         user.setName("Иван");
         user.setBirthday(LocalDate.of(1990, 1, 1));
 
-        ValidationException exception = assertThrows(
-                ValidationException.class,
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
                 () -> userController.create(user)
         );
 
-        assertEquals("Логин не может содержать пробелы", exception.getMessage());
+        assertEquals("Логин не может содержать пробелы",
+                exception.getMessage());
     }
 
     @Test
@@ -167,12 +179,13 @@ class UserControllerTest {
         user.setName("Иван");
         user.setBirthday(LocalDate.now().plusDays(1));
 
-        ValidationException exception = assertThrows(
-                ValidationException.class,
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
                 () -> userController.create(user)
         );
 
-        assertEquals("Дата рождения не может быть в будущем", exception.getMessage());
+        assertEquals("Дата рождения не может быть в будущем",
+                exception.getMessage());
     }
 
     @Test
@@ -228,12 +241,13 @@ class UserControllerTest {
         User created = userController.create(user);
         created.setEmail("");
 
-        ValidationException exception = assertThrows(
-                ValidationException.class,
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
                 () -> userController.update(created)
         );
 
-        assertEquals("Электронная почта не может быть пустой", exception.getMessage());
+        assertEquals("Электронная почта не может быть пустой",
+                exception.getMessage());
     }
 
     @Test
@@ -247,12 +261,13 @@ class UserControllerTest {
         User created = userController.create(user);
         created.setLogin("user 123");
 
-        ValidationException exception = assertThrows(
-                ValidationException.class,
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
                 () -> userController.update(created)
         );
 
-        assertEquals("Логин не может содержать пробелы", exception.getMessage());
+        assertEquals("Логин не может содержать пробелы",
+                exception.getMessage());
     }
 
     @Test
@@ -269,7 +284,8 @@ class UserControllerTest {
                 () -> userController.update(user)
         );
 
-        assertEquals("Пользователь с id=999 не найден", exception.getMessage());
+        assertEquals("Пользователь с id = 999 не найден",
+                exception.getMessage());
     }
 
     @Test
@@ -286,6 +302,7 @@ class UserControllerTest {
                 () -> userController.update(user)
         );
 
-        assertEquals("Пользователь с id=null не найден", exception.getMessage());
+        assertEquals("Пользователь с id = null не найден",
+                exception.getMessage());
     }
 }

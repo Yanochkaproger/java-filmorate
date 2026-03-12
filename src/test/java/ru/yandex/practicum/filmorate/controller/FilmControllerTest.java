@@ -3,8 +3,12 @@ package ru.yandex.practicum.filmorate.controller;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.time.LocalDate;
 
@@ -16,10 +20,14 @@ import static org.junit.jupiter.api.Assertions.*;
 class FilmControllerTest {
 
     private FilmController filmController;
+    private FilmService filmService;
 
     @BeforeEach
     void setUp() {
-        filmController = new FilmController();
+        final InMemoryFilmStorage filmStorage = new InMemoryFilmStorage();
+        final InMemoryUserStorage userStorage = new InMemoryUserStorage();
+        filmService = new FilmService(filmStorage, userStorage);
+        filmController = new FilmController(filmService);
     }
 
     @Test
@@ -44,12 +52,13 @@ class FilmControllerTest {
         film.setReleaseDate(LocalDate.of(2024, 1, 1));
         film.setDuration(120);
 
-        ValidationException exception = assertThrows(
-                ValidationException.class,
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
                 () -> filmController.create(film)
         );
 
-        assertEquals("Название фильма не может быть пустым", exception.getMessage());
+        assertEquals("Название фильма не может быть пустым",
+                exception.getMessage());
     }
 
     @Test
@@ -60,12 +69,13 @@ class FilmControllerTest {
         film.setReleaseDate(LocalDate.of(2024, 1, 1));
         film.setDuration(120);
 
-        ValidationException exception = assertThrows(
-                ValidationException.class,
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
                 () -> filmController.create(film)
         );
 
-        assertEquals("Название фильма не может быть пустым", exception.getMessage());
+        assertEquals("Название фильма не может быть пустым",
+                exception.getMessage());
     }
 
     @Test
@@ -76,12 +86,13 @@ class FilmControllerTest {
         film.setReleaseDate(LocalDate.of(2024, 1, 1));
         film.setDuration(120);
 
-        ValidationException exception = assertThrows(
-                ValidationException.class,
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
                 () -> filmController.create(film)
         );
 
-        assertEquals("Максимальная длина описания — 200 символов", exception.getMessage());
+        assertEquals("Максимальная длина описания — 200 символов",
+                exception.getMessage());
     }
 
     @Test
@@ -105,12 +116,13 @@ class FilmControllerTest {
         film.setReleaseDate(LocalDate.of(1895, 12, 27));
         film.setDuration(120);
 
-        ValidationException exception = assertThrows(
-                ValidationException.class,
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
                 () -> filmController.create(film)
         );
 
-        assertEquals("Дата релиза — не раньше 28 декабря 1895 года", exception.getMessage());
+        assertEquals("Дата релиза — не раньше 28 декабря 1895 года",
+                exception.getMessage());
     }
 
     @Test
@@ -134,12 +146,13 @@ class FilmControllerTest {
         film.setReleaseDate(LocalDate.of(2024, 1, 1));
         film.setDuration(0);
 
-        ValidationException exception = assertThrows(
-                ValidationException.class,
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
                 () -> filmController.create(film)
         );
 
-        assertEquals("Продолжительность фильма должна быть положительным числом", exception.getMessage());
+        assertEquals("Продолжительность фильма должна быть "
+                + "положительным числом", exception.getMessage());
     }
 
     @Test
@@ -150,12 +163,13 @@ class FilmControllerTest {
         film.setReleaseDate(LocalDate.of(2024, 1, 1));
         film.setDuration(-10);
 
-        ValidationException exception = assertThrows(
-                ValidationException.class,
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
                 () -> filmController.create(film)
         );
 
-        assertEquals("Продолжительность фильма должна быть положительным числом", exception.getMessage());
+        assertEquals("Продолжительность фильма должна быть "
+                + "положительным числом", exception.getMessage());
     }
 
     @Test
@@ -185,12 +199,13 @@ class FilmControllerTest {
         Film created = filmController.create(film);
         created.setName("");
 
-        ValidationException exception = assertThrows(
-                ValidationException.class,
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
                 () -> filmController.update(created)
         );
 
-        assertEquals("Название фильма не может быть пустым", exception.getMessage());
+        assertEquals("Название фильма не может быть пустым",
+                exception.getMessage());
     }
 
     @Test
@@ -207,7 +222,8 @@ class FilmControllerTest {
                 () -> filmController.update(film)
         );
 
-        assertEquals("Фильм с id=999 не найден", exception.getMessage());
+        assertEquals("Фильм с id = 999 не найден",
+                exception.getMessage());
     }
 
     @Test
@@ -224,7 +240,7 @@ class FilmControllerTest {
                 () -> filmController.update(film)
         );
 
-        assertEquals("Фильм с id=null не найден", exception.getMessage());
+        assertEquals("Фильм с id = null не найден",
+                exception.getMessage());
     }
 }
-
