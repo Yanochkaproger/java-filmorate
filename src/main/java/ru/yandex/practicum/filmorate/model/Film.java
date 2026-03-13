@@ -1,12 +1,20 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import ru.yandex.practicum.filmorate.annotation.ReleaseDate;
 import jakarta.validation.constraints.*;
 import java.time.LocalDate;
-import java.util.List; // Импортируем List
+import java.util.List;
+// Импортируем List
 
-@Data // Эта аннотация создаст getGenres() и setGenres(List<Genre>)
+@Data
+@Builder (toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
+// Эта аннотация создаст getGenres() и setGenres(List<Genre>)
 public class Film {
     private Long id;
 

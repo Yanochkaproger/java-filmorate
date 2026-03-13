@@ -25,7 +25,7 @@ public class FilmService {
         if (film.getMpa() != null && film.getMpa().getId() != null) {
             Mpa mpa = mpaStorage.findMpaById(film.getMpa().getId())
                     .orElseThrow(() -> new NotFoundException("Рейтинг MPA с id=" + film.getMpa().getId() + " не найден"));
-            film.setMpa(mpa);
+            film.setMpa(mpa); // Подставляем полный объект с именем
         } else {
             film.setMpa(null);
         }
@@ -42,7 +42,7 @@ public class FilmService {
             for (Long id : uniqueIds) {
                 Genre g = genreStorage.findGenreById(id)
                         .orElseThrow(() -> new NotFoundException("Жанр с id=" + id + " не найден"));
-                validGenres.add(g);
+                validGenres.add(g); // Подставляем полный объект с именем
             }
         }
         film.setGenres(validGenres);
@@ -97,21 +97,17 @@ public class FilmService {
         return films;
     }
 
-    // !!! ИСПРАВЛЕНИЕ ЗДЕСЬ !!!
-    // Сортировка теперь происходит в сервисе, используя likeStorage
     public List<Film> findPopular(int count) {
-        // 1. Берем ВСЕ фильмы из хранилища
         List<Film> films = filmStorage.findAllFilms();
 
-        // 2. Сортируем их по количеству лайков (используя метод getLikeCount из LikeStorage)
         return films.stream()
                 .sorted((f1, f2) -> {
                     int likes1 = likeStorage.getLikeCount(f1.getId());
                     int likes2 = likeStorage.getLikeCount(f2.getId());
-                    return Integer.compare(likes2, likes1); // По убыванию
+                    return Integer.compare(likes2, likes1);
                 })
                 .limit(count)
-                .peek(this::enrichFilmData) // Обязательно обогащаем данными (MPA, Genres)!
+                .peek(this::enrichFilmData)
                 .collect(Collectors.toList());
     }
 
@@ -131,35 +127,27 @@ public class FilmService {
         likeStorage.removeLike(filmId, userId);
     }
 
+    /**
+     * Метод обогащения фильма данными из справочников (MPA и Жанры).
+     * Вызывает методы хранилищ, которые делают SQL-запросы без циклов.
+     */
     private void enrichFilmData(Film film) {
         if (film == null) return;
 
-        // Подгрузка MPA
+        // 1. Подгрузка полного объекта MPA (с именем), если есть только ID
         if (film.getMpa() != null && film.getMpa().getId() != null) {
-            mpaStorage.findMpaById(film.getMpa().getId()).ifPresent(film::setMpa);
+            // Если имени нет, значит нужно загрузить полный объект из БД
+            if (film.getMpa().getName() == null) {
+                mpaStorage.findMpaById(film.getMpa().getId()).ifPresent(film::setMpa);
+            }
         }
 
-        // Подгрузка Жанров
-        List<Genre> currentGenres = film.getGenres();
-        if (currentGenres != null && !currentGenres.isEmpty()) {
-            List<Genre> fullGenres = new ArrayList<>();
-            for (Genre g : currentGenres) {
-                if (g.getId() != null) {
-                    if (g.getName() == null) {
-                        genreStorage.findGenreById(g.getId()).ifPresent(fullGenres::add);
-                    } else {
-                        fullGenres.add(g);
-                    }
-                }
-            }
-            if (!fullGenres.isEmpty()) {
-                film.setGenres(fullGenres);
-            }
-        } else {
-            if (film.getGenres() == null) {
-                film.setGenres(new ArrayList<>());
-            }
-        }
+        // 2. Подгрузка Жанров через ОДИН запрос (JOIN film_genres и genres)
+        // Мы полностью заменяем список жанров на тот, что вернет база данных.
+        // Это гарантирует, что у жанров будут имена и не будет дубликатов.
+        // Для этого в GenreStorage (GenreDbStorage) должен быть реализован метод findGenresByFilmId.
+        List<Genre> dbGenres = genreStorage.findGenresByFilmId(film.getId());
+        film.setGenres(dbGenres);
     }
 
     public List<Mpa> findAllMpa() {
