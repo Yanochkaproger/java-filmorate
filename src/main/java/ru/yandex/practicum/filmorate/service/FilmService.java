@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -24,7 +25,7 @@ public class FilmService {
         if (film.getMpa() != null && film.getMpa().getId() != null) {
             Mpa mpa = mpaStorage.findMpaById(film.getMpa().getId())
                     .orElseThrow(() -> new NotFoundException("Рейтинг MPA с id=" + film.getMpa().getId() + " не найден"));
-            film.setMpa(mpa); // Подставляем полный объект с именем
+            film.setMpa(mpa);
         } else {
             film.setMpa(null);
         }
@@ -32,18 +33,16 @@ public class FilmService {
         // 2. Обработка и валидация Жанров (с удалением дубликатов)
         List<Genre> validGenres = new ArrayList<>();
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-            // Используем LinkedHashSet для сохранения порядка и удаления дубликатов по ID
             Set<Long> uniqueIds = new LinkedHashSet<>();
             for (Genre g : film.getGenres()) {
                 if (g.getId() != null) {
                     uniqueIds.add(g.getId());
                 }
             }
-
             for (Long id : uniqueIds) {
                 Genre g = genreStorage.findGenreById(id)
                         .orElseThrow(() -> new NotFoundException("Жанр с id=" + id + " не найден"));
-                validGenres.add(g); // Подставляем полный объект с именем
+                validGenres.add(g);
             }
         }
         film.setGenres(validGenres);
@@ -56,7 +55,7 @@ public class FilmService {
         filmStorage.findFilmById(film.getId())
                 .orElseThrow(() -> new NotFoundException("Фильм с id=" + film.getId() + " не найден"));
 
-        // Обработка MPA (как в create)
+        // Обработка MPA
         if (film.getMpa() != null && film.getMpa().getId() != null) {
             Mpa mpa = mpaStorage.findMpaById(film.getMpa().getId())
                     .orElseThrow(() -> new NotFoundException("Рейтинг MPA с id=" + film.getMpa().getId() + " не найден"));
@@ -65,7 +64,7 @@ public class FilmService {
             film.setMpa(null);
         }
 
-        // Обработка Жанров (как в create)
+        // Обработка Жанров
         List<Genre> validGenres = new ArrayList<>();
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
             Set<Long> uniqueIds = new LinkedHashSet<>();
@@ -98,10 +97,22 @@ public class FilmService {
         return films;
     }
 
+    // !!! ИСПРАВЛЕНИЕ ЗДЕСЬ !!!
+    // Сортировка теперь происходит в сервисе, используя likeStorage
     public List<Film> findPopular(int count) {
-        List<Film> films = filmStorage.findPopular(count);
-        films.forEach(this::enrichFilmData);
-        return films;
+        // 1. Берем ВСЕ фильмы из хранилища
+        List<Film> films = filmStorage.findAllFilms();
+
+        // 2. Сортируем их по количеству лайков (используя метод getLikeCount из LikeStorage)
+        return films.stream()
+                .sorted((f1, f2) -> {
+                    int likes1 = likeStorage.getLikeCount(f1.getId());
+                    int likes2 = likeStorage.getLikeCount(f2.getId());
+                    return Integer.compare(likes2, likes1); // По убыванию
+                })
+                .limit(count)
+                .peek(this::enrichFilmData) // Обязательно обогащаем данными (MPA, Genres)!
+                .collect(Collectors.toList());
     }
 
     public void addLike(Long filmId, Long userId) {
@@ -120,24 +131,20 @@ public class FilmService {
         likeStorage.removeLike(filmId, userId);
     }
 
-    // Вспомогательный метод для гарантированной подгрузки имен MPA и Жанров
     private void enrichFilmData(Film film) {
         if (film == null) return;
 
-        // 1. Подгрузка MPA
+        // Подгрузка MPA
         if (film.getMpa() != null && film.getMpa().getId() != null) {
-            // Всегда пытаемся загрузить полный объект, даже если имя уже есть (на случай кэша/проблем)
             mpaStorage.findMpaById(film.getMpa().getId()).ifPresent(film::setMpa);
         }
 
-        // 2. Подгрузка Жанров
-        // Мы всегда перезагружаем жанры по ID, чтобы гарантировать наличие имени
+        // Подгрузка Жанров
         List<Genre> currentGenres = film.getGenres();
         if (currentGenres != null && !currentGenres.isEmpty()) {
             List<Genre> fullGenres = new ArrayList<>();
             for (Genre g : currentGenres) {
                 if (g.getId() != null) {
-                    // Если имя null ИЛИ мы хотим перестраховаться - грузим из хранилища
                     if (g.getName() == null) {
                         genreStorage.findGenreById(g.getId()).ifPresent(fullGenres::add);
                     } else {
@@ -145,16 +152,10 @@ public class FilmService {
                     }
                 }
             }
-            // Обновляем список только если мы что-то нашли (чтобы не потерять данные)
             if (!fullGenres.isEmpty()) {
                 film.setGenres(fullGenres);
             }
         } else {
-            // Если список жанров пуст или null, значит они хранятся отдельно (в БД).
-            // В рамках InMemory или простой реализации, если хранилище не вернуло жанры,
-            // мы не можем их узнать без отдельного метода findGenresByFilmId.
-            // НО! Так как мы правильно сохраняем их в create/update, они должны быть в объекте.
-            // Если их нет - оставляем пустой список.
             if (film.getGenres() == null) {
                 film.setGenres(new ArrayList<>());
             }

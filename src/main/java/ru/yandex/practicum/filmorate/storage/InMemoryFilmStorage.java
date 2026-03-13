@@ -1,16 +1,26 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
-@Repository // <-- ЭТА АННОТАЦИЯ КРИТИЧЕСКИ ВАЖНА! Она регистрирует класс как би́н в Spring
+@Repository
 public class InMemoryFilmStorage implements FilmStorage {
 
     private final Map<Long, Film> films = new HashMap<>();
     private final AtomicLong filmIdCounter = new AtomicLong(1);
+
+    // Нам нужно хранилище лайков, чтобы посчитать популярность
+    private final LikeStorage likeStorage;
+
+    // Конструктор с внедрением LikeStorage
+    public InMemoryFilmStorage(LikeStorage likeStorage) {
+        this.likeStorage = likeStorage;
+    }
 
     @Override
     public Film create(Film film) {
@@ -23,7 +33,8 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film update(Film film) {
         if (film.getId() == null || !films.containsKey(film.getId())) {
-            throw new RuntimeException("Фильм с таким ID не найден для обновления");
+            // ВАЖНО: Выбрасываем NotFoundException для получения статуса 404
+            throw new NotFoundException("Фильм с id=" + film.getId() + " не найден");
         }
         films.put(film.getId(), film);
         return film;
@@ -36,10 +47,16 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> findPopular(int count) {
-        // Пока можно вернуть просто первые N фильмов, логику популярности добавите позже
+        // Считаем количество лайков для каждого фильма
         return films.values().stream()
+                .sorted((f1, f2) -> {
+                    int likes1 = likeStorage.getLikeCount(f1.getId());
+                    int likes2 = likeStorage.getLikeCount(f2.getId());
+                    // Сортировка по убыванию лайков
+                    return Integer.compare(likes2, likes1);
+                })
                 .limit(count)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -47,3 +64,4 @@ public class InMemoryFilmStorage implements FilmStorage {
         return Optional.ofNullable(films.get(id));
     }
 }
+

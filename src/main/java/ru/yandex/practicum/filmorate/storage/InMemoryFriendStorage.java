@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage; // Нам понадобится доступ к пользователям
+import ru.yandex.practicum.filmorate.exception.NotFoundException; // Добавим для надежности, хотя проверка в сервисе
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,29 +14,30 @@ public class InMemoryFriendStorage implements FriendStorage {
     // Хранилище дружбы: Key = userId, Value = Set of friendIds
     private final Map<Long, Set<Long>> friendsMap = new ConcurrentHashMap<>();
 
-    // Ссылка на хранилище пользователей, чтобы возвращать объекты User, а не просто ID
+    // Ссылка на хранилище пользователей
     private final UserStorage userStorage;
 
-    // Внедряем UserStorage через конструктор (Spring сделает это автоматически)
     public InMemoryFriendStorage(UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
     @Override
     public void addFriend(Long userId, Long friendId) {
-        // Проверка на существование пользователей может быть здесь или в сервисе
+        // Добавляем друга пользователю
         friendsMap.computeIfAbsent(userId, k -> ConcurrentHashMap.newKeySet()).add(friendId);
-        // Дружба обычно взаимна в таких задачах, но если по условию односторонняя - уберите следующую строку
+        // Добавляем пользователя другу (ВЗАИМНОСТЬ)
         friendsMap.computeIfAbsent(friendId, k -> ConcurrentHashMap.newKeySet()).add(userId);
     }
 
     @Override
     public void removeFriend(Long userId, Long friendId) {
+        // Удаляем друга у пользователя
         Set<Long> userFriends = friendsMap.get(userId);
         if (userFriends != null) {
             userFriends.remove(friendId);
         }
 
+        // Удаляем пользователя у друга (ВЗАИМНОСТЬ)
         Set<Long> friendFriends = friendsMap.get(friendId);
         if (friendFriends != null) {
             friendFriends.remove(userId);

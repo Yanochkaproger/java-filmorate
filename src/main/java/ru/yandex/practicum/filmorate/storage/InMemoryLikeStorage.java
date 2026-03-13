@@ -24,22 +24,22 @@ public class InMemoryLikeStorage implements LikeStorage {
         Set<Long> filmLikes = likesMap.get(id);
         if (filmLikes != null) {
             filmLikes.remove(userId);
-            // Опционально: можно удалять запись о фильме, если лайков больше нет, чтобы не засорять память
+            // Опционально: удаляем запись о фильме, если лайков больше нет, чтобы не засорять память
             if (filmLikes.isEmpty()) {
                 likesMap.remove(id);
             }
         }
     }
 
-    // Вспомогательный метод, который может понадобиться сервису позже (например, для подсчета популярности)
-    public int getLikeCount(Long id) {
-        Set<Long> filmLikes = likesMap.get(id);
+    @Override
+    public int getLikeCount(Long filmId) {
+        Set<Long> filmLikes = likesMap.get(filmId);
         return filmLikes == null ? 0 : filmLikes.size();
     }
 
-    // Вспомогательный метод для получения списка лайкнувших
-    public Set<Long> getLikes(Long id) {
-        return likesMap.getOrDefault(id, ConcurrentHashMap.newKeySet());
+    // Вспомогательный метод (можно оставить, если используется где-то еще)
+    public Set<Long> getLikes(Long filmId) {
+        return likesMap.getOrDefault(filmId, ConcurrentHashMap.newKeySet());
     }
 }
 
