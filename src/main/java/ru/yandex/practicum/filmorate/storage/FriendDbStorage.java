@@ -32,7 +32,7 @@ public class FriendDbStorage implements FriendStorage {
     @Override
     public List<User> findAllFriends(Long userId) {
         String sql = """
-            SELECT u.* 
+            SELECT u.*
             FROM friendship f
             JOIN users u ON f.friend_id = u.id
             WHERE f.user_id = ?
@@ -44,11 +44,11 @@ public class FriendDbStorage implements FriendStorage {
     @Override
     public List<User> findCommonFriends(Long userId, Long otherId) {
         String sql = """
-            SELECT u.* 
+            SELECT u.*
             FROM users u
             JOIN friendship f1 ON u.id = f1.friend_id
             JOIN friendship f2 ON u.id = f2.friend_id
-            WHERE f1.user_id = ? 
+            WHERE f1.user_id = ?
               AND f2.user_id = ?
             ORDER BY u.id
         """;
