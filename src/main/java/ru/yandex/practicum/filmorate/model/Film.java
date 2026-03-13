@@ -1,21 +1,31 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.Builder;
 import lombok.Data;
-import java.time.LocalDate;
+import ru.yandex.practicum.filmorate.annotation.ReleaseDate;
 
-/**
- * Модель фильма.
- */
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
+import java.util.LinkedHashSet;
+
 @Data
+@Builder
 public class Film {
-    /** Уникальный идентификатор фильма. */
     private Long id;
-    /** Название фильма. */
+    @NotBlank(message = "Введите название фильма.")
     private String name;
-    /** Описание фильма. */
+    @NotNull
+    @Size(max = 200, message = "Слишком длинное описание.")
     private String description;
-    /** Дата релиза фильма. */
+    @NotNull
+    @ReleaseDate(value = "1895-12-28", message = "Введите дату релиза не ранее 28 декабря 1895 года.")
     private LocalDate releaseDate;
-    /** Продолжительность фильма в минутах. */
+    @Positive(message = "Продолжительность фильма должна быть больше 0.")
     private Integer duration;
+    @NotNull
+    private Mpa mpa;
+    private final LinkedHashSet<Genre> genres = new LinkedHashSet<>();
 }
