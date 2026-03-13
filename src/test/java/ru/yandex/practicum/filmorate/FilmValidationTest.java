@@ -26,14 +26,14 @@ class FilmValidationTest {
 
     @Test
     void validateFilmName() {
-        film = Film.builder()
-                .id(1L)
-                .name("")
-                .description("Описание фильма")
-                .releaseDate(LocalDate.of(2002, 2, 2))
-                .duration(100)
-                .mpa(new Mpa(1L, "G"))
-                .build();
+        film = new Film();
+        film.setId(1L);
+        film.setName(""); // Пустое имя для ошибки валидации
+        film.setDescription("Описание фильма");
+        film.setReleaseDate(LocalDate.of(2002, 2, 2));
+        film.setDuration(100);
+        film.setMpa(new Mpa(1L, "G"));
+
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertEquals(1, violations.size());
         assertEquals("Введите название фильма.", violations.iterator().next().getMessage());
@@ -41,24 +41,26 @@ class FilmValidationTest {
 
     @Test
     void validateFilmDescription() {
-        film = Film.builder()
-                .id(1L)
-                .name("Film")
-                .description("Из-под покрова тьмы ночной,\n" +
-                        "Из чёрной ямы страшных мук\n" +
-                        "Благодарю я всех богов\n" +
-                        "За мой непокорённый дух.\n" +
-                        "\n" +
-                        "И я, попав в тиски беды,\n" +
-                        "Не дрогнул и не застонал,\n" +
-                        "И под ударами судьбы\n" +
-                        "Я ранен был, но не упал.\n" +
-                        "\n" +
-                        "Т")
-                .releaseDate(LocalDate.of(2002, 2, 2))
-                .duration(100)
-                .mpa(new Mpa(1L, "G"))
-                .build();
+        String longDescription = "Из-под покрова тьмы ночной,\n" +
+                "Из чёрной ямы страшных мук\n" +
+                "Благодарю я всех богов\n" +
+                "За мой непокорённый дух.\n" +
+                "\n" +
+                "И я, попав в тиски беды,\n" +
+                "Не дрогнул и не застонал,\n" +
+                "И под ударами судьбы\n" +
+                "Я ранен был, но не упал.\n" +
+                "\n" +
+                "Т"; // Длинное описание (>200 символов)
+
+        film = new Film();
+        film.setId(1L);
+        film.setName("Film");
+        film.setDescription(longDescription);
+        film.setReleaseDate(LocalDate.of(2002, 2, 2));
+        film.setDuration(100);
+        film.setMpa(new Mpa(1L, "G"));
+
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertEquals(1, violations.size());
         assertEquals("Слишком длинное описание.", violations.iterator().next().getMessage());
@@ -66,14 +68,14 @@ class FilmValidationTest {
 
     @Test
     void validateFilmReleaseDate() {
-        film = Film.builder()
-                .id(1L)
-                .name("Film")
-                .description("Описание фильма")
-                .releaseDate(LocalDate.of(1895, 12, 27))
-                .duration(100)
-                .mpa(new Mpa(1L, "G"))
-                .build();
+        film = new Film();
+        film.setId(1L);
+        film.setName("Film");
+        film.setDescription("Описание фильма");
+        film.setReleaseDate(LocalDate.of(1895, 12, 27)); // Дата раньше допустимой
+        film.setDuration(100);
+        film.setMpa(new Mpa(1L, "G"));
+
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertEquals(1, violations.size());
         assertEquals("Введите дату релиза не ранее 28 декабря 1895 года.",
@@ -82,14 +84,14 @@ class FilmValidationTest {
 
     @Test
     void validateFilmDuration() {
-        film = Film.builder()
-                .id(1L)
-                .name("Film")
-                .description("Описание фильма")
-                .releaseDate(LocalDate.of(1895, 12, 29))
-                .duration(-100)
-                .mpa(new Mpa(1L, "G"))
-                .build();
+        film = new Film();
+        film.setId(1L);
+        film.setName("Film");
+        film.setDescription("Описание фильма");
+        film.setReleaseDate(LocalDate.of(1895, 12, 29));
+        film.setDuration(-100); // Отрицательная длительность
+        film.setMpa(new Mpa(1L, "G"));
+
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertEquals(1, violations.size());
         assertEquals("Продолжительность фильма должна быть больше 0.",

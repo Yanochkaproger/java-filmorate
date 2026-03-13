@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -26,44 +26,52 @@ public class UserService {
 
     public User update(User user) {
         validate(user);
-        if (userStorage.findUserById(user.getId()).isEmpty()) {
-            throw new UserNotFoundException("Пользователь не найден.");
-        }
+        userStorage.findUserById(user.getId())
+                .orElseThrow(() -> new NotFoundException("Пользователь с id=" + user.getId() + " не найден"));
         return userStorage.update(user);
     }
 
     public User findUserById(Long id) {
-        return userStorage.findUserById(id).orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
+        return userStorage.findUserById(id)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id=" + id + " не найден"));
     }
 
-    public void addFriend(Long id, Long friendId) {
-        if (userStorage.findUserById(id).isEmpty() || userStorage.findUserById(friendId).isEmpty()) {
-            throw new UserNotFoundException("Пользователь не найден.");
-        }
-        if (id < 0 || friendId < 0) {
-            throw new UserNotFoundException("Пользователь не найден.");
-        }
-        friendStorage.addFriend(id, friendId);
+    public void addFriend(Long userId, Long friendId) {
+        // Проверка существования обоих пользователей
+        userStorage.findUserById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id=" + userId + " не найден"));
+        userStorage.findUserById(friendId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id=" + friendId + " не найден"));
+
+        friendStorage.addFriend(userId, friendId);
     }
 
-    public List<User> findAllFriends(Long id) {
-        return friendStorage.findAllFriends(id);
+    public void removeFriend(Long userId, Long friendId) {
+        userStorage.findUserById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id=" + userId + " не найден"));
+        userStorage.findUserById(friendId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id=" + friendId + " не найден"));
+
+        friendStorage.removeFriend(userId, friendId);
     }
 
-    public List<User> findCommonFriends(Long id, Long otherId) {
-        return friendStorage.findCommonFriends(id, otherId);
+    public List<User> getFriends(Long userId) {
+        userStorage.findUserById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id=" + userId + " не найден"));
+        return friendStorage.findAllFriends(userId);
     }
 
-    public void removeFriend(Long id, Long friendId) {
-        if (userStorage.findUserById(id).isEmpty() || userStorage.findUserById(friendId).isEmpty()) {
-            throw new UserNotFoundException("Пользователь не найден.");
-        }
-        friendStorage.removeFriend(id, friendId);
+    public List<User> getCommonFriends(Long userId, Long otherId) {
+        userStorage.findUserById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id=" + userId + " не найден"));
+        userStorage.findUserById(otherId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id=" + otherId + " не найден"));
+
+        return friendStorage.findCommonFriends(userId, otherId);
     }
 
     private void validate(User user) {
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
+        // Ваша логика валидации, если она нужна здесь вручную.
+        // Обычно это делается через @Valid в контроллере.
     }
 }
