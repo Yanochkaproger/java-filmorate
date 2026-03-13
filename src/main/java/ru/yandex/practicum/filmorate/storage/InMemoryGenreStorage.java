@@ -6,7 +6,6 @@ import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 @Repository
 public class InMemoryGenreStorage implements GenreStorage {
