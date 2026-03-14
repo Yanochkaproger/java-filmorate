@@ -25,14 +25,12 @@ public class FilmDbStorage implements FilmStorage {
     public Film create(Film film) {
         String sql = "INSERT INTO films (name, description, release_date, duration, mpa_id) VALUES (?, ?, ?, ?, ?)";
 
-        // Используем KeyHolder для получения сгенерированного ID (работает в H2 и PostgreSQL)
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, film.getName());
             ps.setString(2, film.getDescription());
-            // ИСПРАВЛЕНИЕ: Явно указываем java.sql.Date, чтобы убрать неоднозначность
             ps.setDate(3, java.sql.Date.valueOf(film.getReleaseDate()));
             ps.setInt(4, film.getDuration());
 
@@ -45,7 +43,6 @@ public class FilmDbStorage implements FilmStorage {
             return ps;
         }, keyHolder);
 
-        // Получаем ID из ключа
         Number key = keyHolder.getKey();
         if (key == null) {
             throw new RuntimeException("Не удалось получить сгенерированный ID для фильма");
@@ -122,16 +119,28 @@ public class FilmDbStorage implements FilmStorage {
         return Optional.of(film);
     }
 
-    // Внутренний метод для поиска по ID (используется в create/update)
     private Optional<Film> findById(Long id) {
         return findFilmById(id);
     }
 
+    /**
+     * Сохраняет жанры фильма используя ПАКЕТНУЮ вставку (batch update).
+     * Это избавляет от выполнения запроса в цикле.
+     */
     private void saveGenres(Long filmId, List<Genre> genres) {
-        String sql = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
-        for (Genre g : genres) {
-            jdbcTemplate.update(sql, filmId, g.getId());
+        if (genres == null || genres.isEmpty()) {
+            return;
         }
+
+        String sql = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
+
+        // Формируем список аргументов для пакетной вставки
+        List<Object[]> batchArgs = genres.stream()
+                .map(genre -> new Object[]{filmId, genre.getId()})
+                .collect(Collectors.toList());
+
+        // Выполняем одну пакетную операцию вместо N отдельных запросов
+        jdbcTemplate.batchUpdate(sql, batchArgs);
     }
 
     private void deleteGenres(Long filmId) {

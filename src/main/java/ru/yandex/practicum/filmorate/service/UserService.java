@@ -9,8 +9,8 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
     private final FriendStorage friendStorage;
@@ -20,12 +20,10 @@ public class UserService {
     }
 
     public User create(User user) {
-        validate(user);
         return userStorage.create(user);
     }
 
     public User update(User user) {
-        validate(user);
         userStorage.findUserById(user.getId())
                 .orElseThrow(() -> new NotFoundException("Пользователь с id=" + user.getId() + " не найден"));
         return userStorage.update(user);
@@ -37,7 +35,6 @@ public class UserService {
     }
 
     public void addFriend(Long userId, Long friendId) {
-        // Проверка существования обоих пользователей
         userStorage.findUserById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id=" + userId + " не найден"));
         userStorage.findUserById(friendId)
@@ -69,9 +66,5 @@ public class UserService {
 
         return friendStorage.findCommonFriends(userId, otherId);
     }
-
-    private void validate(User user) {
-        // Ваша логика валидации, если она нужна здесь вручную.
-        // Обычно это делается через @Valid в контроллере.
-    }
 }
+
