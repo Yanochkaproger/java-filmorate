@@ -2,112 +2,73 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
+import jakarta.validation.Valid;
 import java.util.List;
 
-/**
- * Контроллер для управления пользователями.
- */
 @Slf4j
-@RestController
 @RequiredArgsConstructor
-@RequestMapping("/users")
+@RestController
+@RequestMapping("/users") // Добавлен слэш в начале для корректности пути
 public class UserController {
-
-    /** Сервис для работы с пользователями. */
     private final UserService userService;
 
-    /**
-     * Возвращает всех пользователей.
-     * @return список пользователей
-     */
+    @PostMapping
+    public User create(@Valid @RequestBody User user) {
+        // Исправление: сохраняем результат работы сервиса (там может быть присвоен ID)
+        User createdUser = userService.create(user);
+        log.info("POST /users/{}", createdUser.getId());
+        return createdUser;
+    }
+
+    @PutMapping
+    public User update(@Valid @RequestBody User user) {
+        // Исправление: возвращаем обновленный объект из сервиса
+        User updatedUser = userService.update(user);
+        log.info("PUT /users/{}", updatedUser.getId());
+        return updatedUser;
+    }
+
     @GetMapping
     public List<User> findAll() {
+        log.info("GET /users");
         return userService.findAll();
     }
 
-    /**
-     * Возвращает пользователя по идентификатору.
-     * @param id идентификатор пользователя
-     * @return пользователь
-     */
     @GetMapping("/{id}")
-    public User findById(@PathVariable final Long id) {
-        return userService.findById(id);
+    public User findUserById(@PathVariable("id") Long id) {
+        log.info("GET /users/{}", id);
+        return userService.findUserById(id);
     }
 
-    /**
-     * Создаёт нового пользователя.
-     * @param user данные пользователя из тела запроса
-     * @return созданный пользователь
-     */
-    @PostMapping
-    public User create(final @RequestBody User user) {
-        return userService.create(user);
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable("id") Long id, @PathVariable("friendId") Long friendId) {
+        log.info("PUT /users/{}/friends/{}", id, friendId);
+        userService.addFriend(id, friendId);
     }
 
-    /**
-     * Обновляет существующего пользователя.
-     * @param user данные для обновления
-     * @return обновлённый пользователь
-     */
-    @SuppressWarnings("unused")
-    @PutMapping
-    public User update(final @RequestBody User user) {
-        return userService.update(user);
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void removeFriend(@PathVariable("id") Long id, @PathVariable("friendId") Long friendId) {
+        log.info("DELETE /users/{}/friends/{}", id, friendId); // Было PUT в логе
+        userService.removeFriend(id, friendId);
     }
 
-    /**
-     * Добавляет пользователя в друзья.
-     * @param userId идентификатор пользователя
-     * @param friendId идентификатор друга
-     */
-    @PutMapping("/{userId}/friends/{friendId}")
-    public void addFriend(@PathVariable final Long userId,
-                          @PathVariable final Long friendId) {
-        userService.addFriend(userId, friendId);
+    @GetMapping("/{id}/friends")
+    public List<User> getFriends(@PathVariable("id") Long id) {
+        log.info("GET /users/{}/friends", id);
+        // Исправление: используем параметр id, а не несуществующий userId
+        return userService.getFriends(id);
     }
 
-    /**
-     * Удаляет пользователя из друзей.
-     * @param userId идентификатор пользователя
-     * @param friendId идентификатор друга
-     */
-    @DeleteMapping("/{userId}/friends/{friendId}")
-    public void removeFriend(@PathVariable final Long userId,
-                             @PathVariable final Long friendId) {
-        userService.removeFriend(userId, friendId);
-    }
-
-    /**
-     * Возвращает список друзей пользователя.
-     * @param userId идентификатор пользователя
-     * @return список друзей
-     */
-    @GetMapping("/{userId}/friends")
-    public List<User> getFriends(@PathVariable final Long userId) {
-        return userService.getFriends(userId);
-    }
-
-    /**
-     * Возвращает список общих друзей двух пользователей.
-     * @param userId идентификатор первого пользователя
-     * @param otherUserId идентификатор второго пользователя
-     * @return список общих друзей
-     */
-    @GetMapping("/{userId}/friends/common/{otherUserId}")
-    public List<User> getCommonFriends(@PathVariable final Long userId,
-                                       @PathVariable final Long otherUserId) {
-        return userService.getCommonFriends(userId, otherUserId);
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(@PathVariable("id") Long id, @PathVariable("otherId") Long otherId) {
+        log.info("GET /users/{}/friends/common/{}", id, otherId);
+        // Исправление: используем параметры id и otherId
+        return userService.getCommonFriends(id, otherId);
     }
 }
+
+

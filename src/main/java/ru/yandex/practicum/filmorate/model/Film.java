@@ -1,21 +1,43 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import ru.yandex.practicum.filmorate.annotation.ReleaseDate;
+import jakarta.validation.constraints.*;
 import java.time.LocalDate;
+import java.util.List;
+// Импортируем List
 
-/**
- * Модель фильма.
- */
 @Data
+@Builder (toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
+// Эта аннотация создаст getGenres() и setGenres(List<Genre>)
 public class Film {
-    /** Уникальный идентификатор фильма. */
     private Long id;
-    /** Название фильма. */
+
+    @NotBlank(message = "Введите название фильма.")
     private String name;
-    /** Описание фильма. */
+
+    @NotNull
+    @Size(max = 200, message = "Слишком длинное описание.")
     private String description;
-    /** Дата релиза фильма. */
+
+    @NotNull
+    @ReleaseDate(value = "1895-12-28", message = "Введите дату релиза не ранее 28 декабря 1895 года.")
     private LocalDate releaseDate;
-    /** Продолжительность фильма в минутах. */
+
+    @Positive(message = "Продолжительность фильма должна быть больше 0.")
     private Integer duration;
+
+    @NotNull
+    private Mpa mpa;
+
+    // ВАЖНО:
+    // 1. Нет слова 'final'
+    // 2. Тип List<Genre>, а не LinkedHashSet
+    // 3. Нет инициализации "= new ..." прямо здесь (это мешает сеттеру)
+    private List<Genre> genres;
 }

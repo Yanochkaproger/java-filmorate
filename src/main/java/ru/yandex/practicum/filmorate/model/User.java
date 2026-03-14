@@ -1,21 +1,23 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.Builder;
 import lombok.Data;
+
+import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 
-/**
- * Модель пользователя.
- */
 @Data
+@Builder
 public class User {
-    /** Уникальный идентификатор пользователя. */
     private Long id;
-    /** Электронная почта пользователя. */
+    @NotBlank(message = "Электронная почта не может быть пустой.")
+    @Email(message = "Электронная почта должна содержать символ @.")
     private String email;
-    /** Логин пользователя. */
+    @NotBlank(message = "Логин не может быть пустым.")
+    @Pattern(regexp = "^\\S*$", message = "Логин не может содержать пробелы.")
     private String login;
-    /** Имя пользователя для отображения. */
     private String name;
-    /** Дата рождения пользователя. */
+    @NotNull
+    @PastOrPresent(message = "Дата рождения не может быть в будущем.")
     private LocalDate birthday;
 }
